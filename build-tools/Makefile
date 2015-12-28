@@ -25,10 +25,21 @@
 CC 		:= /usr/bin/gcc
 CXX		:= /usr/bin/g++
 
+
+#
+# Set name of the binary
+#
+BIN		:= 
+
+ifndef BIN
+$(error "No binary name specified")
+endif
+
 #
 # Specify all source files
 #
-;SRC 		:= $(shell find -iname *.c)
+SRC 		:= $(shell find -iname *.c)
+
 
 ifndef SRC
 $(error "No source files specified")
@@ -42,13 +53,9 @@ EMPTY		:=
 SPACE		:= $(EMPTY) $(EMPTY)
 VPATH 		:= $(subst $(SPACE),:,$(sort $(dir $(SRC))))
 
-#
-# Set name of the binary
-#
-;BIN		:= 
 
 #
-# Set name of the build, objects and dependency directories
+# Paths for the build-, objects- and dependency-directories
 #
 BUILDDIR	:= build
 OBJDIR 		:= $(BUILDDIR)/objs
