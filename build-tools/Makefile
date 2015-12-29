@@ -25,7 +25,6 @@
 CC 		:= /usr/bin/gcc
 CXX		:= /usr/bin/g++
 
-
 #
 # Set name of the binary
 #
@@ -40,10 +39,10 @@ endif
 #
 SRC 		:= $(shell find -iname *.c)
 
-
 ifndef SRC
 $(error "No source files specified")
 endif
+
 
 #
 # 'VPATH' is needed for the pattern rule %.o: %.c to work
@@ -52,7 +51,6 @@ endif
 EMPTY		:=
 SPACE		:= $(EMPTY) $(EMPTY)
 VPATH 		:= $(subst $(SPACE),:,$(sort $(dir $(SRC))))
-
 
 #
 # Paths for the build-, objects- and dependency-directories
@@ -143,19 +141,45 @@ CXXFLAGS	:= \
 		-Weffc++						\
 
 
+#
+# Setting some terminal colors
+#
+RED		:= \e[0;31m
+GREEN		:= \e[0;32m
+BROWN		:= \e[0;33m
+BLUE		:= \e[0;34m
+MAGENTA		:= \e[0;35m
+CYAN		:= \e[0;36m
+BOLD_RED	:= \e[1;31m
+BOLD_GREEN	:= \e[1;32m
+BOLD_YELLOW  	:= \e[1;33m
+BOLD_BLUE	:= \e[1;34m
+BOLD_MAGENTA	:= \e[1;35m
+BOLD_CYAN	:= \e[1;36m
+DEFAULT 	:= \e[0m
+
+COLOR_MKDIR	:= $(BOLD_MAGENTA)
+COLOR_COMPILING	:= $(BOLD_BLUE)
+COLOR_LINKING	:= $(BOLD_YELLOW)
+COLOR_FINISHED	:= $(BOLD_GREEN)
+
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $(CPPFLAGS) $(CFLAGS) $^ $(LDFLAGS) $(LDLIBS)
+	@printf "$(COLOR_LINKING)Linking $@$(DEFAULT)\n"
+	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+	@printf "$(COLOR_FINISHED)Built target $(TARGET)$(DEFAULT)\n"
 
 -include $(DEPS)
 
 $(OBJDIR)/%.o: %.c
+	@printf "$(COLOR_COMPILING)Building $@ from $^$(DEFAULT)\n"
 	$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) $< $(LDFLAGS) $(LDLIBS)
 
 $(OBJS): | $(DIRS)
 
 $(DIRS):
+	@printf "$(COLOR_MKDIR)Setting up build directories$(DEFAULT)\n"
 	mkdir -p $(DIRS)
 
 clean:
