@@ -173,7 +173,7 @@ $(TARGET): $(OBJS)
 -include $(DEPS)
 
 $(OBJDIR)/%.o: %.c
-	@printf "$(COLOR_COMPILING)Building $@ from $^$(DEFAULT)\n"
+	@printf "$(COLOR_COMPILING)Building $@ from $<$(DEFAULT)\n"
 	$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) $< $(LDFLAGS) $(LDLIBS)
 
 $(OBJS): | $(DIRS)
