@@ -31,26 +31,27 @@ CXX		:= /usr/bin/g++
 BIN		:= 
 
 ifndef BIN
-$(error "No binary name specified")
+$(error No binary name specified)
 endif
 
 #
-# Specify all source files
+# Specify all source files. The paths should be relative to this file.
 #
-SRC 		:= $(shell find -iname *.c)
+SRC 		:= $(shell find ./ -iname *.c)
 
 ifndef SRC
-$(error "No source files specified")
+$(error No source files specified)
 endif
 
 
 #
-# 'VPATH' is needed for the pattern rule %.o: %.c to work
-# Generate it from $(SRC)
+# Uncomment if 'VPATH' is needed. 'VPATH' is a list of directories in which
+# make searches for source files.
 #
-EMPTY		:=
-SPACE		:= $(EMPTY) $(EMPTY)
-VPATH 		:= $(subst $(SPACE),:,$(sort $(dir $(SRC))))
+# EMPTY		:=
+# SPACE		:= $(EMPTY) $(EMPTY)
+# VPATH 	:= $(subst $(SPACE),:,$(sort $(dir $(SRC))))
+
 
 #
 # Paths for the build-, objects- and dependency-directories
@@ -59,7 +60,6 @@ BUILDDIR	:= build
 OBJDIR 		:= $(BUILDDIR)/objs
 DEPDIR		:= $(BUILDDIR)/deps
 TARGET 		:= $(BUILDDIR)/$(BIN)
-DIRS		:= $(BUILDDIR) $(OBJDIR) $(DEPDIR)
 
 #
 # Set installation directory used in 'make install'
@@ -67,10 +67,12 @@ DIRS		:= $(BUILDDIR) $(OBJDIR) $(DEPDIR)
 INSTALL_DIR	:= /usr/local/bin/
 
 #
-# Generate all object and dependency files from $(SRC)
+# Generate all object and dependency files from $(SRC) and get
+# a list of all inhabited directories
 #
-OBJS		:= $(addprefix $(OBJDIR)/,$(notdir $(patsubst %.c,%.o,$(SRC))))
-DEPS		:= $(addprefix $(DEPDIR)/,$(notdir $(patsubst %.c,%.d,$(SRC))))
+OBJS		:= $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRC)))
+DEPS		:= $(addprefix $(DEPDIR)/,$(patsubst %.c,%.d,$(SRC)))
+DIRS		:= $(BUILDDIR) $(sort $(dir $(OBJS))) $(sort $(dir $(DEPS)))
 
 #
 # Add additional preprocessor definitions
@@ -83,7 +85,7 @@ DEFS		:= \
 # Add additional include paths
 #
 INCLUDE		:= \
-# 		-I./						\
+# 		-I./							\
 
 #
 # Add used libraries which are configurable with pkg-config
@@ -110,13 +112,21 @@ LDFLAGS		:= \
 LDLIBS		:= $(LIBS)
 
 ifdef PKGCONF
-LDLIBS += $(shell pkg-config --libs --cflags $(sort $(PKGCONF)))
+
+OK	:= $(shell pkg-config --exists $(PKGCONF) && printf "OK")
+ifndef $(OK)
+PKGS 		:= $(shell pkg-config --list-all | cut -f1 -d " ")
+FOUND		:= $(sort $(filter $(PKGCONF),$(PKGS)))
+$(error Missing pkg-config libraries: [ $(filter-out $(FOUND),$(PKGCONF)) ])
+endif
+
+LDLIBS		+= $(shell pkg-config --libs --cflags $(PKGCONF))
 endif
 		
 CPPFLAGS	= \
 		$(DEFS)							\
 		$(INCLUDE)						\
-		-MMD -MF $(DEPDIR)/$(notdir $(patsubst %.o,%.d,$@)) 	\
+		-MMD -MF $(patsubst %.o,%.d,$@) 			\
 		-MT $@ 							\
 
 #
@@ -156,30 +166,32 @@ BOLD_YELLOW  	:= \e[1;33m
 BOLD_BLUE	:= \e[1;34m
 BOLD_MAGENTA	:= \e[1;35m
 BOLD_CYAN	:= \e[1;36m
-DEFAULT 	:= \e[0m
+DEFAULT_COLOR 	:= \e[0m
 
-COLOR_MKDIR	:= $(BOLD_MAGENTA)
 COLOR_COMPILING	:= $(BOLD_BLUE)
 COLOR_LINKING	:= $(BOLD_YELLOW)
 COLOR_FINISHED	:= $(BOLD_GREEN)
 
+print = @printf "$(1)$(2)$(DEFAULT_COLOR)\n"
+md5sum = $$(md5sum $(1) | cut -f1 -d " ")
+
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	@printf "$(COLOR_LINKING)Linking $@$(DEFAULT)\n"
+	$(call print,$(COLOR_LINKING),Linking $@)
 	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
-	@printf "$(COLOR_FINISHED)Built target $(TARGET)$(DEFAULT)\n"
+	$(call print,$(COLOR_FINISHED),Built target $@: $(call md5sum,$@))
+	
 
 -include $(DEPS)
 
 $(OBJDIR)/%.o: %.c
-	@printf "$(COLOR_COMPILING)Building $@ from $<$(DEFAULT)\n"
+	$(call print,$(COLOR_COMPILING),Building $@ from $<)
 	$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) $< $(LDFLAGS) $(LDLIBS)
 
 $(OBJS): | $(DIRS)
 
 $(DIRS):
-	@printf "$(COLOR_MKDIR)Setting up build directories$(DEFAULT)\n"
 	mkdir -p $(DIRS)
 
 clean:
@@ -192,4 +204,4 @@ uninstall:
 	rm -f $(INSTALL_DIR)$(BIN)
 
 .PHONY: clean uninstall
-.SILENT: clean
+.SILENT: clean $(DIRS)
