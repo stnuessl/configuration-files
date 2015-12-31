@@ -26,6 +26,13 @@ CC 		:= /usr/bin/gcc
 CXX		:= /usr/bin/g++
 
 #
+# Show / suppress compiler invocations. 
+# Set 'SUPP :=' to show them.
+# Set 'SUPP := @' to suppress compiler invocations.
+#
+SUPP		:=
+
+#
 # Set name of the binary
 #
 BIN		:= 
@@ -111,9 +118,13 @@ LDFLAGS		:= \
 
 LDLIBS		:= $(LIBS)
 
+#
+# Check if specified pkg-config libraries are available and abort
+# if they are not.
+#
 ifdef PKGCONF
 
-OK	:= $(shell pkg-config --exists $(PKGCONF) && printf "OK")
+OK		:= $(shell pkg-config --exists $(PKGCONF) && printf "OK")
 ifndef $(OK)
 PKGS 		:= $(shell pkg-config --list-all | cut -f1 -d " ")
 FOUND		:= $(sort $(filter $(PKGCONF),$(PKGS)))
@@ -172,22 +183,23 @@ COLOR_COMPILING	:= $(BOLD_BLUE)
 COLOR_LINKING	:= $(BOLD_YELLOW)
 COLOR_FINISHED	:= $(BOLD_GREEN)
 
-print = @printf "$(1)$(2)$(DEFAULT_COLOR)\n"
-md5sum = $$(md5sum $(1) | cut -f1 -d " ")
+print 		= @printf "$(1)$(2)$(DEFAULT_COLOR)\n"
+md5sum 		= $$(md5sum $(1) | cut -f1 -d " ")
+
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(call print,$(COLOR_LINKING),Linking $@)
-	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
-	$(call print,$(COLOR_FINISHED),Built target $@: $(call md5sum,$@))
+	$(call print,$(COLOR_LINKING),Linking [ $@ ])
+	$(SUPP)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+	$(call print,$(COLOR_FINISHED),Built target [ $@ ]: $(call md5sum,$@))
 	
 
 -include $(DEPS)
 
 $(OBJDIR)/%.o: %.c
-	$(call print,$(COLOR_COMPILING),Building $@ from $<)
-	$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) $< $(LDFLAGS) $(LDLIBS)
+	$(call print,$(COLOR_COMPILING),Building: $@)
+	$(SUPP)$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) $< $(LDFLAGS) $(LDLIBS)
 
 $(OBJS): | $(DIRS)
 
@@ -203,5 +215,5 @@ install: $(TARGET)
 uninstall:
 	rm -f $(INSTALL_DIR)$(BIN)
 
-.PHONY: clean uninstall
+.PHONY: all clean install uninstall
 .SILENT: clean $(DIRS)
