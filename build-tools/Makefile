@@ -44,7 +44,7 @@ endif
 #
 # Specify all source files. The paths should be relative to this file.
 #
-SRC 		:= $(shell find ./ -iname *.c)
+SRC 		:= $(shell find ./ -iname "*.c")
 
 ifndef SRC
 $(error No source files specified)
@@ -55,17 +55,40 @@ endif
 # Uncomment if 'VPATH' is needed. 'VPATH' is a list of directories in which
 # make searches for source files.
 #
-# EMPTY		:=
-# SPACE		:= $(EMPTY) $(EMPTY)
+EMPTY		:=
+SPACE		:= $(EMPTY) $(EMPTY)
 # VPATH 	:= $(subst $(SPACE),:,$(sort $(dir $(SRC))))
+
+RELPATHS	:= $(filter ../%, $(SRC))
+ifdef RELPATHS
+
+NAMES		:= $(notdir $(RELPATHS))
+UNIQUE		:= $(sort $(notdir $(RELPATHS)))
+
+#
+# Check for duplicate file names (not regarding directories)
+#
+ifneq ($(words $(NAMES)),$(words $(UNIQUE)))
+DUPS		:= $(shell printf "$(NAMES)" | tr -s " " "\n" | sort | uniq -d)
+DIRS		:= $(dir $(filter %$(DUPS), $(SRC)))
+$(error [ $(DUPS) ] occur(s) in two or more relative paths [ $(DIRS) ] - not supported)
+endif
+
+#
+# Only use file name as the source location and add the relative path to 'VPATH'
+# This prevents object files to reside in paths like 'build/src/../relative/' or
+# even worse 'build/src/../../relative' which would be a path outside of
+# the specified build directory
+#
+SRC		:= $(filter-out ../%, $(SRC)) $(notdir $(RELPATHS))
+VPATH		:= $(subst $(SPACE),:, $(dir $(RELPATHS)))
+endif
 
 
 #
 # Paths for the build-, objects- and dependency-directories
 #
 BUILDDIR	:= build
-OBJDIR 		:= $(BUILDDIR)/objs
-DEPDIR		:= $(BUILDDIR)/deps
 TARGET 		:= $(BUILDDIR)/$(BIN)
 
 #
@@ -75,11 +98,13 @@ INSTALL_DIR	:= /usr/local/bin/
 
 #
 # Generate all object and dependency files from $(SRC) and get
-# a list of all inhabited directories
+# a list of all inhabited directories. 'AUX' is used to prevent file paths
+# like build/objs/./srcdir/
 #
-OBJS		:= $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(SRC)))
-DEPS		:= $(addprefix $(DEPDIR)/,$(patsubst %.c,%.d,$(SRC)))
-DIRS		:= $(BUILDDIR) $(sort $(dir $(OBJS))) $(sort $(dir $(DEPS)))
+AUX		:= $(patsubst ./%,%,$(SRC))
+OBJS		:= $(addprefix $(BUILDDIR)/, $(patsubst %.c, %.o, $(AUX)))
+DEPS		:= $(patsubst %.o, %.d, $(OBJS))
+DIRS		:= $(BUILDDIR) $(sort $(dir $(OBJS)))
 
 #
 # Add additional preprocessor definitions
@@ -137,7 +162,8 @@ endif
 CPPFLAGS	= \
 		$(DEFS)							\
 		$(INCLUDE)						\
-		-MMD -MF $(patsubst %.o,%.d,$@) 			\
+		-MMD							\
+		-MF $(patsubst %.o,%.d,$@) 				\
 		-MT $@ 							\
 
 #
@@ -197,7 +223,7 @@ $(TARGET): $(OBJS)
 
 -include $(DEPS)
 
-$(OBJDIR)/%.o: %.c
+$(BUILDDIR)/%.o: %.c
 	$(call print,$(COLOR_COMPILING),Building: $@)
 	$(SUPP)$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) $< $(LDFLAGS) $(LDLIBS)
 
