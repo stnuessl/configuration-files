@@ -143,6 +143,42 @@ LDFLAGS		:= \
 
 LDLIBS		:= $(LIBS)
 
+
+CPPFLAGS	= \
+		$(DEFS)							\
+		$(INCLUDE)						\
+		-MMD							\
+		-MF $(patsubst %.o,%.d,$@) 				\
+		-MT $@ 							\
+
+#
+# Set additional compiler flags
+#
+CFLAGS  	:= \
+		-std=c11 						\
+		-Wall							\
+		-Wextra 						\
+		-Werror 						\
+		-Wpedantic						\
+		-O2 							\
+# 		-g3							\
+# 		-fno-omit-frame-pointer 				\
+#		-fpic							\
+#		-shared							\
+
+CXXFLAGS	:= \
+		-std=c++14						\
+		-Wall							\
+		-Wextra 						\
+		-Werror 						\
+		-Wpedantic						\
+		-Weffc++						\
+		-O2 							\
+# 		-g3							\
+# 		-fno-omit-frame-pointer 				\
+#		-fpic							\
+#		-shared							\
+		
 #
 # Check if specified pkg-config libraries are available and abort
 # if they are not.
@@ -156,36 +192,11 @@ FOUND		:= $(sort $(filter $(PKGCONF),$(PKGS)))
 $(error Missing pkg-config libraries: [ $(filter-out $(FOUND),$(PKGCONF)) ])
 endif
 
-LDLIBS		+= $(shell pkg-config --libs --cflags $(PKGCONF))
+CFLAGS		+= $(shell pkg-config --cflags $(PKGCONF))
+CXXFLAGS	+= $(shell pkg-config --cflags $(PKGCONF))
+LDLIBS		+= $(shell pkg-config --libs $(PKGCONF))
+
 endif
-		
-CPPFLAGS	= \
-		$(DEFS)							\
-		$(INCLUDE)						\
-		-MMD							\
-		-MF $(patsubst %.o,%.d,$@) 				\
-		-MT $@ 							\
-
-#
-# Set additional compiler flags
-#
-CFLAGS  	:= \
-		-std=c11 						\
-		-O2 							\
-		-Wall							\
-		-Wextra 						\
-		-Werror 						\
-		-Wpedantic						\
-# 		-g3							\
-# 		-std=c++14						\
-# 		-fno-omit-frame-pointer 				\
-# 		-Weffc++						\
-#		-fpic							\
-#		-shared							\
-
-CXXFLAGS	:= \
-		-std=c++14						\
-		-Weffc++						\
 
 
 #
