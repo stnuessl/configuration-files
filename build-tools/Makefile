@@ -236,7 +236,7 @@ $(TARGET): $(OBJS)
 
 $(BUILDDIR)/%.o: %.c
 	$(call print,$(COLOR_COMPILING),Building: $@)
-	$(SUPP)$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) $< $(LDFLAGS) $(LDLIBS)
+	$(SUPP)$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) $<
 
 $(OBJS): | $(DIRS)
 
