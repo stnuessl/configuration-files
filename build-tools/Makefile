@@ -47,6 +47,7 @@ endif
 #
 SRC 		:= $(shell find ./ -iname "*.c")
 # SRC 		:= $(shell find ./ -iname "*.cpp")
+# SRC 		:= $(shell find ./ -iname "*.c" -o -iname "*.cpp")
 
 ifndef SRC
 $(error No source files specified)
@@ -106,8 +107,11 @@ INSTALL_DIR	:= /usr/local/bin/
 AUX		:= $(patsubst ./%, %, $(SRC))
 C_SRC		:= $(filter %.c, $(SRC))
 CXX_SRC		:= $(filter %.cpp, $(SRC))
-OBJS		:= $(addprefix $(BUILDDIR)/, $(patsubst %.c, %.o, $(C_SRC)))
-# OBJS		:= $(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.o, $(CXX_SRC)))
+C_OBJS		:= $(addprefix $(BUILDDIR)/, $(patsubst %.c, %.o, $(C_SRC)))
+CXX_OBJS	:= $(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.o, $(CXX_SRC)))
+OBJS		:= $(C_OBJS) 
+# OBJS		:= $(CXX_OBJS)
+# OBJS		:= $(C_OBJS) $(CXX_OBJS)
 DEPS		:= $(patsubst %.o, %.d, $(OBJS))
 DIRS		:= $(BUILDDIR) $(sort $(dir $(OBJS)))
 
