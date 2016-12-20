@@ -2,6 +2,7 @@
 # The MIT License (MIT)
 #
 # Copyright (c) <2015> Steffen Nüssle
+# Copyright (c) <2016> Steffen Nüssle
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +46,7 @@ endif
 # Specify all source files. The paths should be relative to this file.
 #
 SRC 		:= $(shell find ./ -iname "*.c")
+# SRC 		:= $(shell find ./ -iname "*.cpp")
 
 ifndef SRC
 $(error No source files specified)
@@ -101,8 +103,11 @@ INSTALL_DIR	:= /usr/local/bin/
 # a list of all inhabited directories. 'AUX' is used to prevent file paths
 # like build/objs/./srcdir/
 #
-AUX		:= $(patsubst ./%,%,$(SRC))
-OBJS		:= $(addprefix $(BUILDDIR)/, $(patsubst %.c, %.o, $(AUX)))
+AUX		:= $(patsubst ./%, %, $(SRC))
+C_SRC		:= $(filter %.c, $(SRC))
+CXX_SRC		:= $(filter %.cpp, $(SRC))
+OBJS		:= $(addprefix $(BUILDDIR)/, $(patsubst %.c, %.o, $(C_SRC)))
+# OBJS		:= $(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.o, $(CXX_SRC)))
 DEPS		:= $(patsubst %.o, %.d, $(OBJS))
 DIRS		:= $(BUILDDIR) $(sort $(dir $(OBJS)))
 
@@ -137,9 +142,14 @@ LIBS		:= \
 
 #
 # Set linker flags, here: 'rpath' for libraries in non-standard directories
+# If '-shared' is specified: '-fpic' or '-fPIC' should be set here 
+# as in the CFLAGS / CXXFLAGS
 #
 LDFLAGS		:= \
-# 		-Wl,-rpath,/usr/local/lib
+# 		-Wl,-rpath,/usr/local/lib				\
+#		-shared							\
+#		-fPIC							\
+#		-fpic							\
 
 LDLIBS		:= $(LIBS)
 
@@ -164,7 +174,7 @@ CFLAGS  	:= \
 # 		-g3							\
 # 		-fno-omit-frame-pointer 				\
 #		-fpic							\
-#		-shared							\
+
 
 CXXFLAGS	:= \
 		-std=c++14						\
@@ -177,7 +187,6 @@ CXXFLAGS	:= \
 # 		-g3							\
 # 		-fno-omit-frame-pointer 				\
 #		-fpic							\
-#		-shared							\
 		
 #
 # Check if specified pkg-config libraries are available and abort
@@ -237,6 +246,10 @@ $(TARGET): $(OBJS)
 $(BUILDDIR)/%.o: %.c
 	$(call print,$(COLOR_COMPILING),Building: $@)
 	$(SUPP)$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) $<
+	
+# $(BUILDDIR)/%.o: %.cpp
+# 	$(call print,$(COLOR_COMPILING),Building: $@)
+# 	$(SUPP)$(CXX) -c -o $@ $(CPPFLAGS) $(CXXFLAGS) $<
 
 $(OBJS): | $(DIRS)
 
