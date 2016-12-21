@@ -24,8 +24,8 @@
 
 #
 # Copy this file into your top level project folder and name it ".clang-format".
-# Then use "clang-format path/to/source/file" to output the formatted file
-# to stdout. Use "clang-format -i path/to/source/file" to edit the file inplace.
+# Then use "clang-format [<file> ...]" to output the formatted file(s)
+# to stdout. Use "clang-format -i [<file> ...]" to edit the file(s) inplace.
 #
 ---
 Language:        Cpp
