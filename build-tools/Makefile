@@ -105,13 +105,11 @@ INSTALL_DIR	:= /usr/local/bin/
 # like build/objs/./srcdir/
 #
 AUX		:= $(patsubst ./%, %, $(SRC))
-C_SRC		:= $(filter %.c, $(SRC))
-CXX_SRC		:= $(filter %.cpp, $(SRC))
+C_SRC		:= $(filter %.c, $(AUX))
+CXX_SRC		:= $(filter %.cpp, $(AUX))
 C_OBJS		:= $(addprefix $(BUILDDIR)/, $(patsubst %.c, %.o, $(C_SRC)))
 CXX_OBJS	:= $(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.o, $(CXX_SRC)))
-OBJS		:= $(C_OBJS) 
-# OBJS		:= $(CXX_OBJS)
-# OBJS		:= $(C_OBJS) $(CXX_OBJS)
+OBJS		:= $(C_OBJS) $(CXX_OBJS)
 DEPS		:= $(patsubst %.o, %.d, $(OBJS))
 DIRS		:= $(BUILDDIR) $(sort $(dir $(OBJS)))
 
@@ -143,6 +141,8 @@ PKGCONF		:= \
 LIBS		:= \
 # 		-pthread						\
 # 		-lm							\
+# 		-Wl,--start-group					\
+# 		-Wl,--end-group						\
 
 #
 # Set linker flags, here: 'rpath' for libraries in non-standard directories
@@ -242,6 +242,7 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(call print,$(COLOR_LINKING),Linking [ $@ ])
 	$(SUPP)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+# 	$(SUPP)$(CXX) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 	$(call print,$(COLOR_FINISHED),Built target [ $@ ]: $(call md5sum,$@))
 	
 
