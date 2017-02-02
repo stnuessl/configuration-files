@@ -166,18 +166,19 @@ CPPFLAGS	= \
 		-MT $@ 							\
 
 #
-# Set additional compiler flags
+# Set compiler flags that you want to be present for every make invocation.
+# Specific flags for release and debug builds can be added later on
+# with target-specific variable values.
 #
 CFLAGS  	:= \
 		-std=c11 						\
 		-Wall							\
 		-Wextra 						\
 		-Werror 						\
-		-Wpedantic						\
-		-O2 							\
-# 		-g3							\
-# 		-fno-omit-frame-pointer 				\
+		-pedantic						\
+		-fstack-protector-strong				\
 #		-fpic							\
+#		-fno-omit-frame-pointer					\
 
 
 CXXFLAGS	:= \
@@ -185,13 +186,12 @@ CXXFLAGS	:= \
 		-Wall							\
 		-Wextra 						\
 		-Werror 						\
-		-Wpedantic						\
+		-pedantic						\
 		-Weffc++						\
-		-O2 							\
-# 		-g3							\
-# 		-fno-omit-frame-pointer 				\
+		-fstack-protector-strong				\
 #		-fpic							\
-		
+#		-fno-omit-frame-pointer					\
+
 #
 # Check if specified pkg-config libraries are available and abort
 # if they are not.
@@ -237,7 +237,34 @@ print 		= @printf "$(1)$(2)$(DEFAULT_COLOR)\n"
 md5sum 		= $$(md5sum $(1) | cut -f1 -d " ")
 
 
-all: $(TARGET)
+all: release
+
+#
+# Note that if "-flto" is specified you may want to pass the optimization
+# flags used for compiling to the linker (as done below).
+#
+# Also, if you want to use:
+#	-ffunction-sections
+#	-fdata-sections
+#
+# and the linker option
+#	-Wl,--gc-sections
+#
+# This would be the sane place to do so as it may interfere with debugging.
+#
+
+release: CFLAGS 	+= -O2 -flto
+release: CXXFLAGS 	+= -O2 -flto
+release: LDFLAGS 	+= -O2 -flto
+release: $(TARGET)
+
+debug: CFLAGS		+= -Og -g2
+debug: CXXFLAGS 	+= -Og -g2
+debug: $(TARGET)
+
+syntax-check: CFLAGS 	+= -fsyntax-only
+syntax-check: CXXFLAGS 	+= -fsyntax-only
+syntax-check: $(OBJS)
 
 $(TARGET): $(OBJS)
 	$(call print,$(COLOR_LINKING),Linking [ $@ ])
@@ -270,5 +297,5 @@ install: $(TARGET)
 uninstall:
 	rm -f $(INSTALL_DIR)$(BIN)
 
-.PHONY: all clean install uninstall
+.PHONY: all release debug syntax-check clean install uninstall
 .SILENT: clean $(DIRS)
