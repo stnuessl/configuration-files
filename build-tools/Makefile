@@ -189,7 +189,9 @@ CXXFLAGS	:= \
 		-pedantic						\
 		-Weffc++						\
 		-fstack-protector-strong				\
+# 		-fvisibility-inlines-hidden				\
 #		-fpic							\
+#		-fno-rtti						\
 #		-fno-omit-frame-pointer					\
 
 #
