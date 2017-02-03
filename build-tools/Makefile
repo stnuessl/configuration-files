@@ -114,13 +114,6 @@ DEPS		:= $(patsubst %.o, %.d, $(OBJS))
 DIRS		:= $(BUILDDIR) $(sort $(dir $(OBJS)))
 
 #
-# Add additional preprocessor definitions
-#
-DEFS		:= \
-#		-D_GNU_SOURCE						\
-#		-DNDEBUG						\
-
-#
 # Add additional include paths
 #
 INCLUDE		:= \
@@ -159,11 +152,11 @@ LDLIBS		:= $(LIBS)
 
 
 CPPFLAGS	= \
-		$(DEFS)							\
 		$(INCLUDE)						\
 		-MMD							\
 		-MF $(patsubst %.o,%.d,$@) 				\
 		-MT $@ 							\
+# 		-D_GNU_SOURCE						\
 
 #
 # Set compiler flags that you want to be present for every make invocation.
@@ -255,6 +248,7 @@ all: release
 # This would be the sane place to do so as it may interfere with debugging.
 #
 
+release: CPPFLAGS	+= -DNDEBUG
 release: CFLAGS 	+= -O2 -flto
 release: CXXFLAGS 	+= -O2 -flto
 release: LDFLAGS 	+= -O2 -flto
