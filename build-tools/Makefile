@@ -3,6 +3,7 @@
 #
 # Copyright (c) <2015> Steffen Nüssle
 # Copyright (c) <2016> Steffen Nüssle
+# Copyright (c) <2017> Steffen Nüssle
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -48,6 +49,13 @@ endif
 SRC 		:= $(shell find ./ -iname "*.c")
 # SRC 		:= $(shell find ./ -iname "*.cpp")
 # SRC 		:= $(shell find ./ -iname "*.c" -o -iname "*.cpp")
+
+# 
+# Optional: This variable is only used by the 'format' target which
+# is not necessary to build the target.
+#
+HDR		:= $(shell find ./ -iname "*.h")
+# HDR		:= $(shell find ./ -iname "*.hpp")
 
 ifndef SRC
 $(error No source files specified)
@@ -285,7 +293,10 @@ $(DIRS):
 	mkdir -p $(DIRS)
 
 clean:
-	rm -rf $(TARGET) $(DIRS) 
+	rm -rf $(TARGET) $(DIRS)
+
+format:
+	clang-format -i $(HDR) $(SRC)
 
 install: $(TARGET)
 	cp $(TARGET) $(INSTALL_DIR)
@@ -293,5 +304,15 @@ install: $(TARGET)
 uninstall:
 	rm -f $(INSTALL_DIR)$(BIN)
 
-.PHONY: all release debug syntax-check clean install uninstall
-.SILENT: clean $(DIRS)
+.PHONY: all 								\
+	clean 								\
+	debug 								\
+	format								\
+	install 							\
+	release 							\
+	syntax-check 							\
+	uninstall
+	
+.SILENT: clean 								\
+	format 								\
+	$(DIRS)
