@@ -140,6 +140,7 @@ PKGCONF		:= \
 # Set non-pkg-configurable libraries flags 
 #
 LIBS		:= \
+#		-lstdc++fs						\
 # 		-pthread						\
 # 		-lm							\
 # 		-Wl,--start-group					\
