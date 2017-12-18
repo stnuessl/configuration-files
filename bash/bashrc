@@ -5,16 +5,6 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-function fsync() {
-    local CMD="/usr/bin/rsync -avrzu --progress"
-    local IP="192.168.178.201"
-
-    $CMD /home/bockler/Musik/ "$IP:/home/bockler/Musik"
-    $CMD /home/bockler/Dokumente/ "$IP:/home/bockler/Dokumente"
-    $CMD "$IP:/home/bockler/Musik/" /home/bockler/Musik
-    $CMD "$IP:/home/bockler/Dokumente/" /home/bockler/Dokumente    
-}
-
 alias ls='ls --color=auto'
 alias valgrind='valgrind --leak-check=full --show-reachable=yes --track-fds=yes'
 alias callgrind='\valgrind --tool=callgrind'
