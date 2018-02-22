@@ -12,4 +12,8 @@ alias cachegrind='\valgrind --tool=cachegrind'
 alias helgrind='\valgrind --tool=helgrind'
 alias chromium='chromium --incognito'
 
+alias bak-push='rsync --archive --compress --recursive --update --delete --stats /home/bockler/{Dokumente,Musik} 192.168.178.202:/mnt/media1/backups/bockler'
+alias bak-pull='rsync --archive --compress --recursive --update --stats 192.168.178.202:/mnt/media1/backups/bockler/{Dokumente,Musik} /home/bockler'
+alias bak-test='rsync --archive --compress --recursive --update --delete --stats --dry-run /home/bockler/{Dokumente,Musik} 192.168.178.202:/mnt/media1/backups/bockler'
+
 PS1='[\u@\h \W]\$ '
