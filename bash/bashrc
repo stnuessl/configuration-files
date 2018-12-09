@@ -5,6 +5,12 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
+# Enable termite to start a new terminal in the current working directory.
+if [[ $TERM == xterm-termite ]]; then
+  . /etc/profile.d/vte.sh
+  __vte_prompt_command
+fi
+
 alias ls='ls --color=auto'
 alias valgrind='valgrind --leak-check=full --show-reachable=yes --track-fds=yes'
 alias callgrind='\valgrind --tool=callgrind'
@@ -17,3 +23,4 @@ alias bak-pull='rsync --archive --compress --recursive --update --stats 192.168.
 alias bak-test='rsync --archive --compress --recursive --update --delete --stats --dry-run /home/bockler/{Dokumente,Musik} 192.168.178.202:/mnt/media1/backups/bockler'
 
 PS1='[\u@\h \W]\$ '
+
