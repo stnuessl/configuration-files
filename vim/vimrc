@@ -29,9 +29,9 @@ set number
 syntax enable
 
 " Set colorscheme to solarized
+set termguicolors
 set background=dark
-let g:solarized_termcolors=256
-colorscheme solarized
+colorscheme gruvbox-dark
 
 " Set textwidth and show an indicator
 set textwidth=80
