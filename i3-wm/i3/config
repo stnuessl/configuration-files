@@ -11,6 +11,9 @@ font pango:Hack 10
 # Use Mouse+$mod to drag floating windows to their wanted position
 #floating_modifier $mod
 
+# Disable focus wrapping (not intuitive)
+focus_wrapping no
+
 # Start a terminal
 bindsym $mod+Return exec --no-startup-id i3-sensible-terminal
 
