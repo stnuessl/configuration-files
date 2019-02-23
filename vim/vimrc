@@ -28,7 +28,7 @@ set number
 " Enable syntax highlighting
 syntax enable
 
-" Set colorscheme to solarized
+" Set colorscheme
 set termguicolors
 set background=dark
 colorscheme gruvbox-dark
@@ -36,4 +36,7 @@ colorscheme gruvbox-dark
 " Set textwidth and show an indicator
 set textwidth=80
 set colorcolumn=+1
+set nowrap
 
+" Show tabs as '>---' in makefiles and python sources and do not expand them
+autocmd FileType make,python setlocal noexpandtab list listchars=tab:>-
