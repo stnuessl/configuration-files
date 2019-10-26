@@ -152,7 +152,7 @@ bar {
     # Disable tray icons
     tray_output none
 
-    # Dactivate mouse buttons
+    # Deactivate mouse buttons
     bindsym button1 nop
     bindsym button2 nop
     bindsym button3 nop
