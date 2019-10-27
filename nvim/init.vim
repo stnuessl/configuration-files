@@ -4,6 +4,9 @@
 
 set nocompatible
 
+" Set the cursor to a (blinking) block for all modes
+set guicursor=a:block
+
 " Enable utf-8 encoding
 set enc=utf-8
 set fenc=utf-8
