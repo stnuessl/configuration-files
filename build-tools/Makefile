@@ -1,9 +1,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) <2015> Steffen Nüssle
-# Copyright (c) <2016> Steffen Nüssle
-# Copyright (c) <2017> Steffen Nüssle
+# Copyright (c) 2019  Steffen Nuessle
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -51,8 +49,8 @@ SRC 		:= $(shell find ./ -iname "*.c")
 # SRC 		:= $(shell find ./ -iname "*.c" -o -iname "*.cpp")
 
 # 
-# Optional: This variable is only used by the 'format' target which
-# is not necessary to build the target.
+# Optional: This variable is used by the 'format' and 'tags'  targets 
+# which are not necessary to build the target.
 #
 HDR		:= $(shell find ./ -iname "*.h")
 # HDR		:= $(shell find ./ -iname "*.hpp")
@@ -91,7 +89,7 @@ endif
 # even worse 'build/src/../../relative' which would be a path outside of
 # the specified build directory
 #
-SRC		:= $(filter-out ../%, $(SRC)) $(notdir $(RELPATHS))
+SRC			:= $(filter-out ../%, $(SRC)) $(notdir $(RELPATHS))
 VPATH		:= $(subst $(SPACE),:, $(dir $(RELPATHS)))
 endif
 
@@ -112,7 +110,7 @@ INSTALL_DIR	:= /usr/local/bin/
 # a list of all inhabited directories. 'AUX' is used to prevent file paths
 # like build/objs/./srcdir/
 #
-AUX		:= $(patsubst ./%, %, $(SRC))
+AUX			:= $(patsubst ./%, %, $(SRC))
 C_SRC		:= $(filter %.c, $(AUX))
 CXX_SRC		:= $(filter %.cpp, $(AUX))
 C_OBJS		:= $(addprefix $(BUILDDIR)/, $(patsubst %.c, %.o, $(C_SRC)))
@@ -125,26 +123,26 @@ DIRS		:= $(BUILDDIR) $(sort $(dir $(OBJS)))
 # Add additional include paths
 #
 INCLUDE		:= \
-# 		-I./							\
+# 		-I./								\
 
 #
 # Add used libraries which are configurable with pkg-config
 #
 PKGCONF		:= \
-# 		gstreamer-1.0						\
+# 		gstreamer-1.0							\
 # 		gstreamer-pbutils-1.0					\
-# 		libcurl							\
-# 		libxml-2.0						\
+# 		libcurl									\
+# 		libxml-2.0								\
 
 #
 # Set non-pkg-configurable libraries flags 
 #
 LIBS		:= \
-#		-lstdc++fs						\
-# 		-pthread						\
-# 		-lm							\
-# 		-Wl,--start-group					\
-# 		-Wl,--end-group						\
+#		-lstdc++fs								\
+# 		-pthread								\
+# 		-lm										\
+# 		-Wl,--start-group						\
+# 		-Wl,--end-group							\
 
 #
 # Set linker flags, here: 'rpath' for libraries in non-standard directories
@@ -153,19 +151,28 @@ LIBS		:= \
 #
 LDFLAGS		:= \
 # 		-Wl,-rpath,/usr/local/lib				\
-#		-shared							\
-#		-fPIC							\
-#		-fpic							\
+#		-shared									\
+#		-fPIC									\
+#		-fpic									\
 
 LDLIBS		:= $(LIBS)
 
 
 CPPFLAGS	= \
-		$(INCLUDE)						\
-		-MMD							\
+		$(INCLUDE)								\
+		-MMD									\
 		-MF $(patsubst %.o,%.d,$@) 				\
-		-MT $@ 							\
-# 		-D_GNU_SOURCE						\
+		-MT $@ 									\
+# 		-D_GNU_SOURCE							\
+
+#
+# If clang is used, generate a compilation database for each
+# processed translation unit.
+#
+ifeq (clang, $(findstring clang, $(CC) $(CXX)))
+CPPFLAGS	+= -MJ $(patsubst %.o,%.json,$@)
+endif
+
 
 #
 # Set compiler flags that you want to be present for every make invocation.
@@ -173,27 +180,27 @@ CPPFLAGS	= \
 # with target-specific variable values.
 #
 CFLAGS  	:= \
-		-std=c11 						\
-		-Wall							\
-		-Wextra 						\
-		-Werror 						\
-		-pedantic						\
+		-std=c11 								\
+		-Wall									\
+		-Wextra 								\
+		-Werror 								\
+		-pedantic								\
 		-fstack-protector-strong				\
-#		-fpic							\
+#		-fpic									\
 #		-fno-omit-frame-pointer					\
 
 
 CXXFLAGS	:= \
-		-std=c++14						\
-		-Wall							\
-		-Wextra 						\
-		-Werror 						\
-		-pedantic						\
-		-Weffc++						\
+		-std=c++14								\
+		-Wall									\
+		-Wextra 								\
+		-Werror 								\
+		-pedantic								\
 		-fstack-protector-strong				\
+#		-fpic									\
+#		-Weffc++								\
 # 		-fvisibility-inlines-hidden				\
-#		-fpic							\
-#		-fno-rtti						\
+#		-fno-rtti								\
 #		-fno-omit-frame-pointer					\
 
 #
@@ -219,18 +226,18 @@ endif
 #
 # Setting some terminal colors
 #
-RED		:= \e[0;31m
-GREEN		:= \e[0;32m
-BROWN		:= \e[0;33m
-BLUE		:= \e[0;34m
-MAGENTA		:= \e[0;35m
-CYAN		:= \e[0;36m
-BOLD_RED	:= \e[1;31m
-BOLD_GREEN	:= \e[1;32m
-BOLD_YELLOW  	:= \e[1;33m
-BOLD_BLUE	:= \e[1;34m
+RED				:= \e[0;31m
+GREEN			:= \e[0;32m
+BROWN			:= \e[0;33m
+BLUE			:= \e[0;34m
+MAGENTA			:= \e[0;35m
+CYAN			:= \e[0;36m
+BOLD_RED		:= \e[1;31m
+BOLD_GREEN		:= \e[1;32m
+BOLD_YELLOW 	:= \e[1;33m
+BOLD_BLUE		:= \e[1;34m
 BOLD_MAGENTA	:= \e[1;35m
-BOLD_CYAN	:= \e[1;36m
+BOLD_CYAN		:= \e[1;36m
 DEFAULT_COLOR 	:= \e[0m
 
 COLOR_COMPILING	:= $(BOLD_BLUE)
@@ -296,6 +303,9 @@ $(DIRS):
 clean:
 	rm -rf $(TARGET) $(DIRS)
 
+tags: $(HDR) $(SRC)
+	ctags -f tags $^
+
 format:
 	clang-format -i $(HDR) $(SRC)
 
@@ -305,15 +315,18 @@ install: $(TARGET)
 uninstall:
 	rm -f $(INSTALL_DIR)$(BIN)
 
-.PHONY: all 								\
-	clean 								\
-	debug 								\
-	format								\
-	install 							\
-	release 							\
+.PHONY: \
+	all 									\
+	clean 									\
+	debug 									\
+	format									\
+	install 								\
+	release 								\
 	syntax-check 							\
 	uninstall
-	
-.SILENT: clean 								\
-	format 								\
+
+.SILENT: \
+	clean 									\
+	format 									\
+	tags									\
 	$(DIRS)
