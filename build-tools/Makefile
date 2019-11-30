@@ -22,8 +22,8 @@
 # THE SOFTWARE.
 #
 
-CC 		:= /usr/bin/gcc
-CXX		:= /usr/bin/g++
+CC			:= /usr/bin/clang
+CXX			:= /usr/bin/clang++
 
 #
 # Show / suppress compiler invocations. 
@@ -35,7 +35,7 @@ SUPP		:=
 #
 # Set name of the binary
 #
-BIN		:= 
+BIN			:= 
 
 ifndef BIN
 $(error No binary name specified)
@@ -44,15 +44,15 @@ endif
 #
 # Specify all source files. The paths should be relative to this file.
 #
-SRC 		:= $(shell find ./ -iname "*.c")
-# SRC 		:= $(shell find ./ -iname "*.cpp")
-# SRC 		:= $(shell find ./ -iname "*.c" -o -iname "*.cpp")
+SRC			:= $(shell find ./ -iname "*.c")
+# SRC		:= $(shell find ./ -iname "*.cpp")
+# SRC		:= $(shell find ./ -iname "*.c" -o -iname "*.cpp")
 
 # 
 # Optional: This variable is used by the 'format' and 'tags'  targets 
 # which are not necessary to build the target.
 #
-HDR		:= $(shell find ./ -iname "*.h")
+HDR			:= $(shell find ./ -iname "*.h")
 # HDR		:= $(shell find ./ -iname "*.hpp")
 
 ifndef SRC
@@ -98,7 +98,7 @@ endif
 # Paths for the build-, objects- and dependency-directories
 #
 BUILDDIR	:= build
-TARGET 		:= $(BUILDDIR)/$(BIN)
+TARGET		:= $(BUILDDIR)/$(BIN)
 
 #
 # Set installation directory used in 'make install'
@@ -106,7 +106,7 @@ TARGET 		:= $(BUILDDIR)/$(BIN)
 INSTALL_DIR	:= /usr/local/bin/
 
 #
-# Generate all object and dependency files from $(SRC) and get
+# Define all object and dependency files from $(SRC) and get
 # a list of all inhabited directories. 'AUX' is used to prevent file paths
 # like build/objs/./srcdir/
 #
@@ -116,33 +116,38 @@ CXX_SRC		:= $(filter %.cpp, $(AUX))
 C_OBJS		:= $(addprefix $(BUILDDIR)/, $(patsubst %.c, %.o, $(C_SRC)))
 CXX_OBJS	:= $(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.o, $(CXX_SRC)))
 OBJS		:= $(C_OBJS) $(CXX_OBJS)
-DEPS		:= $(patsubst %.o, %.d, $(OBJS))
 DIRS		:= $(BUILDDIR) $(sort $(dir $(OBJS)))
+
+#
+# Define dependency and JSON compilation database files.
+#
+DEPS		:= $(patsubst %.o, %.d, $(OBJS))
+JSON		:= $(patsubst %.o, %.json, $(OBJS))
 
 #
 # Add additional include paths
 #
 INCLUDE		:= \
-# 		-I./								\
+#		-I./ \
 
 #
 # Add used libraries which are configurable with pkg-config
 #
 PKGCONF		:= \
-# 		gstreamer-1.0							\
-# 		gstreamer-pbutils-1.0					\
-# 		libcurl									\
-# 		libxml-2.0								\
+# 		gstreamer-1.0 \
+# 		gstreamer-pbutils-1.0 \
+# 		libcurl \
+# 		libxml-2.0 \
 
 #
 # Set non-pkg-configurable libraries flags 
 #
 LIBS		:= \
-#		-lstdc++fs								\
-# 		-pthread								\
-# 		-lm										\
-# 		-Wl,--start-group						\
-# 		-Wl,--end-group							\
+#		-lstdc++fs \
+# 		-pthread \
+# 		-lm \
+# 		-Wl,--start-group \
+# 		-Wl,--end-group \
 
 #
 # Set linker flags, here: 'rpath' for libraries in non-standard directories
@@ -150,27 +155,30 @@ LIBS		:= \
 # as in the CFLAGS / CXXFLAGS
 #
 LDFLAGS		:= \
-# 		-Wl,-rpath,/usr/local/lib				\
-#		-shared									\
-#		-fPIC									\
-#		-fpic									\
+# 		-Wl,-rpath,/usr/local/lib \
+#		-shared \
+#		-fPIC \
+#		-fpic \
 
 LDLIBS		:= $(LIBS)
 
-
+#
+# Set the preprocessor flags and also generate a dependency 
+# file "$(DEPS)" for each processed translation unit.
+#
 CPPFLAGS	= \
-		$(INCLUDE)								\
-		-MMD									\
-		-MF $(patsubst %.o,%.d,$@) 				\
-		-MT $@ 									\
-# 		-D_GNU_SOURCE							\
+		$(INCLUDE) \
+		-MMD \
+		-MF $(patsubst %.o, %.d, $@) \
+		-MT $@  \
+#		-D_GNU_SOURCE \
 
 #
 # If clang is used, generate a compilation database for each
 # processed translation unit.
 #
 ifeq (clang, $(findstring clang, $(CC) $(CXX)))
-CPPFLAGS	+= -MJ $(patsubst %.o,%.json,$@)
+CPPFLAGS	+= -MJ $(patsubst %.o, %.json, $@)
 endif
 
 
@@ -179,29 +187,29 @@ endif
 # Specific flags for release and debug builds can be added later on
 # with target-specific variable values.
 #
-CFLAGS  	:= \
-		-std=c11 								\
-		-Wall									\
-		-Wextra 								\
-		-Werror 								\
-		-pedantic								\
-		-fstack-protector-strong				\
-#		-fpic									\
-#		-fno-omit-frame-pointer					\
+CFLAGS		:= \
+		-std=c11 \
+		-Wall \
+		-Wextra \
+		-Werror \
+		-pedantic \
+		-fstack-protector-strong \
+#		-fpic \
+#		-fno-omit-frame-pointer \
 
 
 CXXFLAGS	:= \
-		-std=c++14								\
-		-Wall									\
-		-Wextra 								\
-		-Werror 								\
-		-pedantic								\
-		-fstack-protector-strong				\
-#		-fpic									\
-#		-Weffc++								\
-# 		-fvisibility-inlines-hidden				\
-#		-fno-rtti								\
-#		-fno-omit-frame-pointer					\
+		-std=c++14 \
+		-Wall \
+		-Wextra \
+		-Werror \
+		-pedantic \
+		-fstack-protector-strong \
+#		-fpic \
+#		-Weffc++ \
+#		-fvisibility-inlines-hidden \
+#		-fno-rtti \
+#		-fno-omit-frame-pointer \
 
 #
 # Check if specified pkg-config libraries are available and abort
@@ -219,81 +227,62 @@ endif
 CFLAGS		+= $(shell pkg-config --cflags $(PKGCONF))
 CXXFLAGS	+= $(shell pkg-config --cflags $(PKGCONF))
 LDLIBS		+= $(shell pkg-config --libs $(PKGCONF))
-
 endif
 
 
 #
-# Setting some terminal colors
+# Setting terminal colors
 #
-RED				:= \e[0;31m
-GREEN			:= \e[0;32m
-BROWN			:= \e[0;33m
-BLUE			:= \e[0;34m
-MAGENTA			:= \e[0;35m
-CYAN			:= \e[0;36m
-BOLD_RED		:= \e[1;31m
-BOLD_GREEN		:= \e[1;32m
-BOLD_YELLOW 	:= \e[1;33m
-BOLD_BLUE		:= \e[1;34m
-BOLD_MAGENTA	:= \e[1;35m
-BOLD_CYAN		:= \e[1;36m
-DEFAULT_COLOR 	:= \e[0m
+RED			:= \e[1;31m
+GREEN		:= \e[1;32m
+YELLOW		:= \e[1;33m
+BLUE		:= \e[1;34m
+MAGENTA		:= \e[1;35m
+CYAN		:= \e[1;36m
+RESET		:= \e[0m
 
-COLOR_COMPILING	:= $(BOLD_BLUE)
-COLOR_LINKING	:= $(BOLD_YELLOW)
-COLOR_FINISHED	:= $(BOLD_GREEN)
+#
+# Get the MD5 hash value of a file passed as an argument.
+#
+md5sum		= $$(md5sum $(1) | cut -f1 -d " ")
 
-print 		= @printf "$(1)$(2)$(DEFAULT_COLOR)\n"
-md5sum 		= $$(md5sum $(1) | cut -f1 -d " ")
-
-
-all: release
 
 #
 # Note that if "-flto" is specified you may want to pass the optimization
 # flags used for compiling to the linker (as done below).
 #
-# Also, if you want to use:
-#	-ffunction-sections
-#	-fdata-sections
-#
-# and the linker option
-#	-Wl,--gc-sections
-#
-# This would be the sane place to do so as it may interfere with debugging.
-#
+all: release
 
 release: CPPFLAGS	+= -DNDEBUG
-release: CFLAGS 	+= -O2 -flto
-release: CXXFLAGS 	+= -O2 -flto
-release: LDFLAGS 	+= -O2 -flto
+release: CFLAGS	 	+= -O2 -flto -fdata-sections -ffunction-sections
+release: CXXFLAGS	+= -O2 -flto -fdata-sections -ffunction-sections
+release: LDFLAGS	+= -O2 -flto -Wl,--gc-sections
 release: $(TARGET)
 
 debug: CFLAGS		+= -Og -g2
-debug: CXXFLAGS 	+= -Og -g2
+debug: CXXFLAGS		+= -Og -g2
 debug: $(TARGET)
 
-syntax-check: CFLAGS 	+= -fsyntax-only
-syntax-check: CXXFLAGS 	+= -fsyntax-only
+syntax-check: CFLAGS	+= -fsyntax-only
+syntax-check: CXXFLAGS	+= -fsyntax-only
 syntax-check: $(OBJS)
 
+
 $(TARGET): $(OBJS)
-	$(call print,$(COLOR_LINKING),Linking [ $@ ])
+	@printf "$(YELLOW)Linking [ $@ ]$(RESET)\n"
 	$(SUPP)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
-# 	$(SUPP)$(CXX) -o $@ $^ $(LDFLAGS) $(LDLIBS)
-	$(call print,$(COLOR_FINISHED),Built target [ $@ ]: $(call md5sum,$@))
-	
+#	$(SUPP)$(CXX) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+	@printf "$(GREEN)Built target [ $@ ]: $(call md5sum, $@)$(RESET)\n"
 
 -include $(DEPS)
 
 $(BUILDDIR)/%.o: %.c
-	$(call print,$(COLOR_COMPILING),Building: $@)
+	@printf "$(BLUE)Building: $@$(RESET)\n"
 	$(SUPP)$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) $<
-	
+
 # $(BUILDDIR)/%.o: %.cpp
-# 	$(call print,$(COLOR_COMPILING),Building: $@)
-# 	$(SUPP)$(CXX) -c -o $@ $(CPPFLAGS) $(CXXFLAGS) $<
+#	@printf "$(BLUE)Building: $@$(RESET)\n"
+#	$(SUPP)$(CXX) -c -o $@ $(CPPFLAGS) $(CXXFLAGS) $<
 
 $(OBJS): | $(DIRS)
 
@@ -303,11 +292,14 @@ $(DIRS):
 clean:
 	rm -rf $(TARGET) $(DIRS)
 
-tags: $(HDR) $(SRC)
-	ctags -f tags $^
+compile_commands.json: $(JSON)
+	sed -e '1s/^/[' -e '$$s/,\s*$$/]' $^ | json_pp > $@
 
 format:
 	clang-format -i $(HDR) $(SRC)
+
+tags: $(HDR) $(SRC)
+	ctags -f tags $^
 
 install: $(TARGET)
 	cp $(TARGET) $(INSTALL_DIR)
@@ -316,17 +308,18 @@ uninstall:
 	rm -f $(INSTALL_DIR)$(BIN)
 
 .PHONY: \
-	all 									\
-	clean 									\
-	debug 									\
-	format									\
-	install 								\
-	release 								\
-	syntax-check 							\
+	all \
+	clean \
+	compile_commands.json \
+	debug \
+	format \
+	install \
+	release \
+	syntax-check \
 	uninstall
 
 .SILENT: \
-	clean 									\
-	format 									\
-	tags									\
+	clean \
+	format \
+	tags \
 	$(DIRS)
