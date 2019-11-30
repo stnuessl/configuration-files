@@ -289,11 +289,11 @@ $(OBJS): | $(DIRS)
 $(DIRS):
 	mkdir -p $(DIRS)
 
+compile_commands.json: $(OBJS)
+	sed -e '1s/^/[/' -e '$$s/,\s*$$/]/' $(JSON) | json_pp > $@
+
 clean:
 	rm -rf $(TARGET) $(DIRS)
-
-compile_commands.json: $(JSON)
-	sed -e '1s/^/[' -e '$$s/,\s*$$/]' $^ | json_pp > $@
 
 format:
 	clang-format -i $(HDR) $(SRC)
@@ -310,7 +310,6 @@ uninstall:
 .PHONY: \
 	all \
 	clean \
-	compile_commands.json \
 	debug \
 	format \
 	install \
@@ -320,6 +319,7 @@ uninstall:
 
 .SILENT: \
 	clean \
+	compile_commands.json \
 	format \
 	tags \
 	$(DIRS)
