@@ -191,9 +191,9 @@ CFLAGS		:= \
 		-std=c11 \
 		-Wall \
 		-Wextra \
-		-Werror \
 		-pedantic \
 		-fstack-protector-strong \
+#		-Werror \
 #		-fpic \
 #		-fno-omit-frame-pointer \
 
@@ -202,9 +202,9 @@ CXXFLAGS	:= \
 		-std=c++14 \
 		-Wall \
 		-Wextra \
-		-Werror \
 		-pedantic \
 		-fstack-protector-strong \
+#		-Werror \
 #		-fpic \
 #		-Weffc++ \
 #		-fvisibility-inlines-hidden \
