@@ -21,7 +21,7 @@ esac
 
 [ -r /usr/share/bash-completion/bash_completion   ] && . /usr/share/bash-completion/bash_completion
 
-alias ls='ls --color'
-alias grep='grep --color'
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
 
 export HISTCONTROL=ignoreboth:erasedups
