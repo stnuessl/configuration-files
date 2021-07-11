@@ -1,6 +1,0 @@
-#
-# rofi configuration file
-#
-rofi.modi: run,window
-rofi.font: Hack 10
-rofi.theme: /usr/share/rofi/themes/gruvbox-dark.rasi
