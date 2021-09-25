@@ -1,7 +1,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2019  Steffen Nuessle
+# Copyright (c) 2021  Steffen Nuessle
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,10 @@
 # THE SOFTWARE.
 #
 
-CC			:= /usr/bin/clang
-CXX			:= /usr/bin/clang++
+#CC			:= /usr/bin/clang
+#CC			:= /usr/bin/gcc
+#CXX		:= /usr/bin/clang++
+#CXX		:= /usr/bin/g++
 
 #
 # Show / suppress compiler invocations. 
@@ -35,25 +37,33 @@ SUPP		:=
 #
 # Set name of the binary
 #
-BIN			:= 
+BIN			:=
 
 ifndef BIN
 $(error No binary name specified)
 endif
 
+VERSION_MAJOR	:= 0
+VERSION_MINOR	:= 1
+VERSION_PATCH	:= 0
+
+#
+# Use the current unix time as the build timestamp.
+#
+UNIX_TIME	:= $(shell date --utc +"%s")
+
 #
 # Specify all source files. The paths should be relative to this file.
 #
-SRC			:= $(shell find ./ -iname "*.c")
-# SRC		:= $(shell find ./ -iname "*.cpp")
-# SRC		:= $(shell find ./ -iname "*.c" -o -iname "*.cpp")
+SRC			:= \
+		$(shell find src/ -iname "*.c")
 
 # 
-# Optional: This variable is used by the 'format' and 'tags'  targets 
+# Optional: This variable is used by the 'format' and 'tags' targets 
 # which are not necessary to build the target.
 #
-HDR			:= $(shell find ./ -iname "*.h")
-# HDR		:= $(shell find ./ -iname "*.hpp")
+HDR			:= \
+		$(shell find src/ -iname "*.h")
 
 ifndef SRC
 $(error No source files specified)
@@ -75,12 +85,12 @@ NAMES		:= $(notdir $(RELPATHS))
 UNIQUE		:= $(sort $(notdir $(RELPATHS)))
 
 #
-# Check for duplicate file names (not regarding directories)
+# Check for duplicate file names (not regarding directories).
 #
 ifneq ($(words $(NAMES)),$(words $(UNIQUE)))
 DUPS		:= $(shell printf "$(NAMES)" | tr -s " " "\n" | sort | uniq -d)
 DIRS		:= $(dir $(filter %$(DUPS), $(SRC)))
-$(error [ $(DUPS) ] occur(s) in two or more relative paths [ $(DIRS) ] - not supported)
+$(error Detected name duplicates in relative paths [ $(DUPS) ] - [ $(DIRS) ])
 endif
 
 #
@@ -97,13 +107,13 @@ endif
 #
 # Paths for the build-, objects- and dependency-directories
 #
-BUILDDIR	:= build
-TARGET		:= $(BUILDDIR)/$(BIN)
+BUILD_DIR	:= build
+TARGET		:= $(strip $(BUILD_DIR))/$(strip $(BIN))
 
 #
 # Set installation directory used in 'make install'
 #
-INSTALL_DIR	:= /usr/local/bin/
+INSTALL_DIR	:= /usr/local/bin
 
 #
 # Define all object and dependency files from $(SRC) and get
@@ -113,10 +123,10 @@ INSTALL_DIR	:= /usr/local/bin/
 AUX			:= $(patsubst ./%, %, $(SRC))
 C_SRC		:= $(filter %.c, $(AUX))
 CXX_SRC		:= $(filter %.cpp, $(AUX))
-C_OBJS		:= $(addprefix $(BUILDDIR)/, $(patsubst %.c, %.o, $(C_SRC)))
-CXX_OBJS	:= $(addprefix $(BUILDDIR)/, $(patsubst %.cpp, %.o, $(CXX_SRC)))
+C_OBJS		:= $(addprefix $(BUILD_DIR)/, $(patsubst %.c, %.o, $(C_SRC)))
+CXX_OBJS	:= $(addprefix $(BUILD_DIR)/, $(patsubst %.cpp, %.o, $(CXX_SRC)))
 OBJS		:= $(C_OBJS) $(CXX_OBJS)
-DIRS		:= $(BUILDDIR) $(sort $(dir $(OBJS)))
+DIRS		:= $(BUILD_DIR) $(sort $(dir $(OBJS)))
 
 #
 # Define dependency and JSON compilation database files.
@@ -127,13 +137,18 @@ JSON		:= $(patsubst %.o, %.json, $(OBJS))
 #
 # Add additional include paths
 #
-INCLUDE		:= \
-#		-I./ \
+INCLUDES	:= \
 
 #
 # Add used libraries which are configurable with pkg-config
 #
 PKGCONF		:= \
+#		cairo \
+#		freetype2 \
+#		wayland-client \
+#		xcb \
+#		xcb-keysyms \
+#		xkbcommon \
 # 		gstreamer-1.0 \
 # 		gstreamer-pbutils-1.0 \
 # 		libcurl \
@@ -143,11 +158,8 @@ PKGCONF		:= \
 # Set non-pkg-configurable libraries flags 
 #
 LIBS		:= \
-#		-lstdc++fs \
-# 		-pthread \
 # 		-lm \
-# 		-Wl,--start-group \
-# 		-Wl,--end-group \
+#		-lstdc++fs \
 
 #
 # Set linker flags, here: 'rpath' for libraries in non-standard directories
@@ -155,10 +167,13 @@ LIBS		:= \
 # as in the CFLAGS / CXXFLAGS
 #
 LDFLAGS		:= \
-# 		-Wl,-rpath,/usr/local/lib \
-#		-shared \
 #		-fPIC \
 #		-fpic \
+# 		-pthread \
+#		-shared \
+# 		-Wl,-rpath,/usr/local/lib \
+# 		-Wl,--start-group \
+# 		-Wl,--end-group \
 
 LDLIBS		:= $(LIBS)
 
@@ -167,11 +182,12 @@ LDLIBS		:= $(LIBS)
 # file "$(DEPS)" for each processed translation unit.
 #
 CPPFLAGS	= \
-		$(INCLUDE) \
+		$(INCLUDES) \
 		-MMD \
 		-MF $(patsubst %.o, %.d, $@) \
 		-MT $@  \
-#		-D_GNU_SOURCE \
+		-D_GNU_SOURCE \
+		-DCOPYRIGHT_YEAR=\"$(shell date --date "@$(UNIX_TIME)" +"%Y")\"
 
 #
 # If clang is used, generate a compilation database for each
@@ -193,17 +209,19 @@ CFLAGS		:= \
 		-Wextra \
 		-pedantic \
 		-fstack-protector-strong \
+		-fno-plt \
 #		-Werror \
 #		-fpic \
 #		-fno-omit-frame-pointer \
 
 
 CXXFLAGS	:= \
-		-std=c++14 \
+		-std=c++17 \
 		-Wall \
 		-Wextra \
 		-pedantic \
 		-fstack-protector-strong \
+		-fno-plt \
 #		-Werror \
 #		-fpic \
 #		-Weffc++ \
@@ -217,11 +235,10 @@ CXXFLAGS	:= \
 #
 ifdef PKGCONF
 
-OK		:= $(shell pkg-config --exists $(PKGCONF) && printf "OK")
-ifndef $(OK)
-PKGS 		:= $(shell pkg-config --list-all | cut -f1 -d " ")
-FOUND		:= $(sort $(filter $(PKGCONF),$(PKGS)))
-$(error Missing pkg-config libraries: [ $(filter-out $(FOUND),$(PKGCONF)) ])
+ifneq ($(shell pkg-config --exists $(PKGCONF) && printf $$?), 0)
+ALL_PKGS 	:= $(shell pkg-config --list-all | cut -f1 -d " ")
+OK_PKGS		:= $(sort $(filter $(PKGCONF), $(ALL_PKGS)))
+$(error Missing pkg-config libraries: [ $(filter-out $(OK_PKGS), $(PKGCONF)) ])
 endif
 
 CFLAGS		+= $(shell pkg-config --cflags $(PKGCONF))
@@ -229,10 +246,20 @@ CXXFLAGS	+= $(shell pkg-config --cflags $(PKGCONF))
 LDLIBS		+= $(shell pkg-config --libs $(PKGCONF))
 endif
 
+#
+# Append extra arguments passed on the command-line
+#
+CPPFLAGS	+= $(EXTRA_CPPFLAGS)
+CFLAGS		+= $(EXTRA_CFLAGS)
+CXXFLAGS	+= $(EXTRA_CXXFLAGS)
+LDFLAGS		+= $(EXTRA_LDFLAGS)
 
 #
 # Setting terminal colors
 #
+
+ifneq ($(MAKEFILE_COLOR), 0)
+
 RED			:= \e[1;31m
 GREEN		:= \e[1;32m
 YELLOW		:= \e[1;33m
@@ -241,10 +268,12 @@ MAGENTA		:= \e[1;35m
 CYAN		:= \e[1;36m
 RESET		:= \e[0m
 
+endif
+
 #
 # Get the MD5 hash value of a file passed as an argument.
 #
-md5sum		= $$(md5sum $(1) | cut -f1 -d " ")
+checksum	= $$(sha256sum $(1) | cut -f1 -d " ")
 
 
 #
@@ -254,11 +283,12 @@ md5sum		= $$(md5sum $(1) | cut -f1 -d " ")
 all: release
 
 release: CPPFLAGS	+= -DNDEBUG
-release: CFLAGS	 	+= -O2 -flto -fdata-sections -ffunction-sections
+release: CFLAGS		+= -O2 -flto -fdata-sections -ffunction-sections
 release: CXXFLAGS	+= -O2 -flto -fdata-sections -ffunction-sections
 release: LDFLAGS	+= -O2 -flto -Wl,--gc-sections
 release: $(TARGET)
 
+debug: CPPFLAGS		+=
 debug: CFLAGS		+= -Og -g2
 debug: CXXFLAGS		+= -Og -g2
 debug: $(TARGET)
@@ -270,30 +300,30 @@ syntax-check: $(OBJS)
 
 $(TARGET): $(OBJS)
 	@printf "$(YELLOW)Linking [ $@ ]$(RESET)\n"
-	$(SUPP)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+#	$(SUPP)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 #	$(SUPP)$(CXX) -o $@ $^ $(LDFLAGS) $(LDLIBS)
-	@printf "$(GREEN)Built target [ $@ ]: $(call md5sum, $@)$(RESET)\n"
+	@printf "$(GREEN)Built target [ $@ ]: $(call checksum, $@)$(RESET)\n"
 
 -include $(DEPS)
 
-$(BUILDDIR)/%.o: %.c
+$(BUILD_DIR)/%.o: %.c
 	@printf "$(BLUE)Building: $@$(RESET)\n"
-	$(SUPP)$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) $<
+#	$(SUPP)$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) $<
 
-# $(BUILDDIR)/%.o: %.cpp
-#	@printf "$(BLUE)Building: $@$(RESET)\n"
+$(BUILD_DIR)/%.o: %.cpp
+	@printf "$(BLUE)Building: $@$(RESET)\n"
 #	$(SUPP)$(CXX) -c -o $@ $(CPPFLAGS) $(CXXFLAGS) $<
 
 $(OBJS): | $(DIRS)
 
 $(DIRS):
-	mkdir -p $(DIRS)
+	mkdir -p $@
 
 compile_commands.json: $(OBJS)
 	sed -e '1s/^/[/' -e '$$s/,\s*$$/]/' $(JSON) | json_pp > $@
 
 clean:
-	rm -rf $(TARGET) $(DIRS)
+	rm -rf $(BUILD_DIR)
 
 format:
 	clang-format -i $(HDR) $(SRC)
@@ -305,7 +335,7 @@ install: $(TARGET)
 	cp $(TARGET) $(INSTALL_DIR)
 
 uninstall:
-	rm -f $(INSTALL_DIR)$(BIN)
+	rm -f $(INSTALL_DIR)/$(BIN)
 
 .PHONY: \
 	all \
@@ -323,3 +353,4 @@ uninstall:
 	format \
 	tags \
 	$(DIRS)
+
