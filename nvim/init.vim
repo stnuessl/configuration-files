@@ -28,6 +28,9 @@ set expandtab
 " Show line numbers
 set number
 
+" Disable mouse
+set mouse=
+
 " Enable syntax highlighting
 syntax enable
 
@@ -41,5 +44,10 @@ set textwidth=80
 set colorcolumn=+1
 set nowrap
 
+set completeopt=menuone,longest
+
 " Show tabs as '>---' in makefiles and python sources and do not expand them
 autocmd FileType make,python setlocal noexpandtab list listchars=tab:>-
+
+" Source the language server protocol configuration for C or C++ files
+autocmd BufRead *.[ch],*.[ch]pp luafile ~/.config/nvim/lua/lsp/clangd.lua
