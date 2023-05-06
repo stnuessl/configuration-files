@@ -46,6 +46,10 @@ set nowrap
 
 set completeopt=menuone,longest
 
+" Set completion style when entering file paths
+set wildmode=longest,list,full
+set wildmenu
+
 " Show tabs as '>---' in makefiles and python sources and do not expand them
 autocmd FileType make,python setlocal noexpandtab list listchars=tab:>-
 
