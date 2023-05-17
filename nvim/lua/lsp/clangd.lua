@@ -74,7 +74,10 @@ main = function()
             local setloclist = function()
                 vim.diagnostic.setloclist({
                     open = true,
-                    severity = vim.diagnostic.severity.WARN,
+                    severity = { 
+                        min = vim.diagnostic.severity.HINT,
+                        max = vim.diagnostic.severity.ERROR,
+                    },
                     title = 'clangd: Diagnostics',
                 })
             end
