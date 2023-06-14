@@ -29,6 +29,7 @@ main = function()
 
     local files = {
         '.clang-format',
+        '.clang-tidy',
         '.clangd',
         'LICENSE',
         'LICENSE.md',
