@@ -54,4 +54,7 @@ set wildmenu
 autocmd FileType make,python setlocal noexpandtab list listchars=tab:>-
 
 " Source the language server protocol configuration for C or C++ files
-autocmd BufRead *.[ch],*.[ch]pp luafile ~/.config/nvim/lua/lsp/clangd.lua
+autocmd
+    \ BufRead *.{c,h,cc,cpp,cxx,hpp,hxx}
+    \ luafile ~/.config/nvim/lua/lsp/clangd.lua
+
