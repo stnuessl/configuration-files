@@ -23,10 +23,6 @@
 --
 
 main = function()
-    if vim.lsp.buf.server_ready() then
-        return
-    end
-
     local files = {
         '.clang-format',
         '.clang-tidy',
