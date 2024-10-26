@@ -18,12 +18,16 @@ set smartindent
 set autoindent
 
 "
-" Set tab width to 4 spaces and 
+" Set tab width to 4 spaces and
 " insert spaces instead of tabs
 "
 set tabstop=4
 set shiftwidth=4
 set expandtab
+
+" Show tabs as '>---' and trailing spaces as '~'
+set list
+set listchars=tab:>-,trail:~
 
 " Show line numbers
 set number
@@ -50,8 +54,11 @@ set completeopt=menuone,longest
 set wildmode=longest,list,full
 set wildmenu
 
-" Show tabs as '>---' in makefiles and python sources and do not expand them
-autocmd FileType make,python setlocal noexpandtab list listchars=tab:>-
+" Do not expand tabs to spaces in make files
+autocmd FileType make setlocal noexpandtab
+
+" Remove trailing whitespaces before saving a buffer
+autocmd BufWritePre * :% s/\s\+$//e
 
 " Source the language server protocol configuration for C or C++ files
 autocmd
