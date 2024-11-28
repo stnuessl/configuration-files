@@ -8,7 +8,7 @@
 
 general {
         colors = true
-        interval = 5 
+        interval = 5
 }
 
 #order += "ipv6"
@@ -49,7 +49,7 @@ disk "/" {
 }
 
 disk "/home/"{
-	format = " /home/ %avail "
+	format = " /home %avail "
 }
 
 volume master {
