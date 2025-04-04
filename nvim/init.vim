@@ -8,9 +8,8 @@ set nocompatible
 set guicursor=a:block
 
 " Enable utf-8 encoding
-set enc=utf-8
-set fenc=utf-8
-set termencoding=utf-8
+set encoding=utf-8
+set fileencoding=utf-8
 
 " Enable auto-indentation after opening braces
 " and keep an indentation level
