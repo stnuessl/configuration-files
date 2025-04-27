@@ -42,6 +42,9 @@ set termguicolors
 set background=dark
 colorscheme gruvbox-dark
 
+" Don't show the sign column
+set signcolumn=no
+
 " Set textwidth and show an indicator
 set textwidth=80
 set colorcolumn=+1
@@ -63,4 +66,9 @@ autocmd BufWritePre * :% s/\s\+$//e
 autocmd
     \ BufRead *.{c,h,cc,cpp,cxx,hpp,hxx}
     \ luafile ~/.config/nvim/lua/lsp/clangd.lua
+
+" Disable auto-wrapping
+autocmd
+    \ BufEnter *
+    \ setlocal formatoptions=
 
